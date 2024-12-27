@@ -1,5 +1,5 @@
 from sqlmodel import create_engine, Session
-from core.setting import settings
+from core.config import settings
 from typing import Generator
 
 

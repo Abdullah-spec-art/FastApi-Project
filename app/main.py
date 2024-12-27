@@ -3,7 +3,7 @@ from routes import router
 from db.session import engine
 from sqlmodel import SQLModel
 from db import TableModel
-from core.setting import Settings
+from core.config import Settings
 
 # Create the tables in the database
 # TableModel.metadata.create_all(bind=engine)

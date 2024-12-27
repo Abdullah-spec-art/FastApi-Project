@@ -16,6 +16,3 @@ class User(TableModel, table=True):
 
 
 
-'''if TYPE_CHECKING:
-    from db.models.todo import ToDo
-    todos: List["ToDo"] = Relationship(back_populates="user")'''

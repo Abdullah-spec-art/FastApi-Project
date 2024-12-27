@@ -1,5 +1,5 @@
-from fastapi import HTTPException, status,Request,Depends
-from core.setting import ALGORITHM,SECRET_KEY
+from fastapi import HTTPException, status,Depends
+from core.config import ALGORITHM,SECRET_KEY
 from fastapi.security import HTTPBearer,HTTPBasicCredentials
 from jose import jwt, JWTError,ExpiredSignatureError
 from passlib.context import CryptContext
@@ -7,7 +7,6 @@ from datetime import datetime,timedelta,timezone
 from sqlmodel import Session
 from db.session import get_db
 from typing import Union
-from schemas.user import TokenData
 from sqlmodel import select
 from db.models.user import  User
 
@@ -44,25 +43,3 @@ def get_current_user(db:Session=Depends(get_db),credentials:HTTPBasicCredentials
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user or token")
     return user
-
-'''def get_current_userss(request: Request,db:Session=Depends(get_db)):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise HTTPException(status_code=401, detail="Authorization token is missing")
-
-    if token.startswith("Bearer "):
-        token = token.split(" ")[1]
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email=payload.get("sub")
-        if not email:
-            raise HTTPException(status_code=401, detail="Invalid token payload")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-    stmt = select(User).where(User.email == email)
-    user = db.exec(stmt).one_or_none()
-    if user is None:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return user
-'''

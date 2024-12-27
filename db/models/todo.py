@@ -18,7 +18,3 @@ class ToDo(TableModel, table=True):  # Inherit from TableModel
 def update_updated_at(mapper, connection, target):
      target.updated_at = datetime.now(timezone.utc)
 
-
-'''if TYPE_CHECKING:
-    from db.models.user import User
-user: "User" = Relationship(back_populates="todos")'''

@@ -3,7 +3,7 @@ from typing import List
 from sqlmodel import Session
 from db.repository.jwt import get_current_user
 from db.session import get_db
-from schemas.todo import addtodo,ResponseToDo,UpdateTodo
+from schemas.todo import Addtodo,ResponseToDo,TodoUpdateData
 from db.models.user import User
 from fastapi import APIRouter, Depends
 import uuid
@@ -13,11 +13,11 @@ from schemas.user import Response
 router = APIRouter()
 
 @router.post("/add-todo",response_model=Response)
-def create_todo(todo:addtodo,db:Session=Depends(get_db),user=Depends(get_current_user),):
+def create_todo(todo:Addtodo,db:Session=Depends(get_db),user=Depends(get_current_user),):
     return add_todo(todo=todo, db=db, user=user)
 
 @router.put("/todo-update/{todo_id}",response_model=Response)
-def update_todo_route(todo_id:uuid.UUID,todo:UpdateTodo,db:Session=Depends(get_db),user=Depends(get_current_user),):
+def update_todo_route(todo_id:uuid.UUID,todo:TodoUpdateData,db:Session=Depends(get_db),user=Depends(get_current_user),):
     return update_todo(todo_id=todo_id,todo=todo, db=db, user=user)
 
 @router.get("/get-todo/{todo_id}",response_model=Response)
