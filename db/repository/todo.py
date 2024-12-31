@@ -10,7 +10,7 @@ from sqlmodel import select,or_
 from typing import Optional
 
 #Create a new Todo
-def add_todo(todo:Addtodo, db:Session=Depends(get_db),user=Depends(get_current_user)):
+def create_todo(todo:Addtodo, db:Session=Depends(get_db),user=Depends(get_current_user)):
         created_by=user.id
         new_todo = ToDo(title=todo.title, description=todo.description,created_by=created_by)
         db.add(new_todo)
@@ -23,15 +23,15 @@ def add_todo(todo:Addtodo, db:Session=Depends(get_db),user=Depends(get_current_u
         print(f"created at: {new_todo.created_at}")
         return Response[TodoUpdateData](data=data,message="Todo created successfully")
 
-#Get todo user by ID
-def get_todo_user(db: Session, todo_id: uuid.UUID,user_id: uuid.UUID):
+#fetch todo by ID
+def fetch_todo_by_id(db: Session, todo_id: uuid.UUID,user_id: uuid.UUID):
     stmt = select(ToDo).where(ToDo.id == todo_id,ToDo.created_by==user_id)
     result = db.exec(stmt).one_or_none()
     return result
 
 #update todo 
 def update_todo(todo_id:uuid.UUID,todo:TodoUpdateData, db:Session=Depends(get_db),user=Depends(get_current_user)):
-    db_todo=get_todo_user(db,todo_id,user.id)
+    db_todo=fetch_todo_by_id(db,todo_id,user.id)
     if not db_todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found or unauthorized.")
     if todo.title is not None:
@@ -50,7 +50,7 @@ def update_todo(todo_id:uuid.UUID,todo:TodoUpdateData, db:Session=Depends(get_db
 
 #Get todo by ID
 def get_todo(todo_id:uuid.UUID, db:Session=Depends(get_db),user=Depends(get_current_user)):
-    db_todo=get_todo_user(db,todo_id,user.id)
+    db_todo=fetch_todo_by_id(db,todo_id,user.id)
     if not db_todo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found or unauthorized.")
     data=TodoUpdateData(
@@ -69,10 +69,21 @@ def get_all_todo(search:Optional[str],db:Session=Depends(get_db),user=Depends(ge
 
 
 #Delete todo by ID
-def del_todo(todo_id:uuid.UUID,db:Session=Depends(get_db),user=Depends(get_current_user)):
-    db_todo=get_todo_user(db,todo_id,user.id)
+def delete_todo(todo_id:uuid.UUID,db:Session=Depends(get_db),user=Depends(get_current_user)):
+    db_todo=fetch_todo_by_id(db,todo_id,user.id)
     if db_todo is None:
         raise HTTPException(status_code=404, detail="todo not found") 
     db.delete(db_todo)
     db.commit()
     return {"message":"ToDo deleted successfully."}
+
+#Delete all todos by user id
+def delete_all_todo(db:Session=Depends(get_db),user=Depends(get_current_user)):
+    stmt = select(ToDo).where(ToDo.created_by==user.id)
+    db_todos = db.exec(stmt).all()
+    if not db_todos:
+            raise HTTPException(status_code=404, detail="todo not found") 
+    for db_todo in db_todos:
+        db.delete(db_todo)
+    db.commit()
+    return {"message":" All ToDos deleted successfully."}

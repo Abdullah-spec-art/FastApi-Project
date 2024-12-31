@@ -42,4 +42,5 @@ def get_current_user(db:Session=Depends(get_db),credentials:HTTPBasicCredentials
     user = db.exec(stmt).one_or_none()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user or token")
+    print(f"User ID: {user.id}") 
     return user

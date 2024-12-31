@@ -11,7 +11,7 @@ class ToDo(TableModel, table=True):  # Inherit from TableModel
     description: str = Field(nullable=True)  # Optional description
     created_at: datetime = Field(default=datetime.now(timezone.utc))  # Timestamp when created
     updated_at: datetime = Field(default=datetime.now(timezone.utc),)  # Timestamp updated on modification
-    created_by: uuid.UUID = Field(foreign_key="Users.id", nullable=False)
+    created_by: uuid.UUID = Field(foreign_key="Users.id",ondelete="CASCADE", nullable=False)
     
 # Add Listener for Automatically Updating `updated_at`
 @event.listens_for(ToDo, "before_update")

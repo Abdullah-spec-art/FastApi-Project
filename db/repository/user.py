@@ -18,7 +18,7 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 #Get user by email   
-def by_email(db: Session, email: str):
+def fetch_user_by_email(db: Session, email: str):
     stmt = select(User).where(User.email == email)
     result = db.exec(stmt).one_or_none()
     return result
@@ -29,13 +29,12 @@ def generate_otp():
 
 #Create user (for signup)
 def create_user(db: Session, user: UserCreate): 
-        existing_user=by_email(db, user.email)
+        existing_user=fetch_user_by_email(db, user.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User already exists"
             )
-        
         hashed_password = hash_password(user.password)
         otp=generate_otp()
         email_verified=False
@@ -54,7 +53,7 @@ def create_user(db: Session, user: UserCreate):
 
 #for login user
 def login_user(db: Session, user_login: UserLogin):
-    user = by_email(db, user_login.email)
+    user = fetch_user_by_email(db, user_login.email)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -115,7 +114,7 @@ def send_otp_to_email(email:str, otp: str):
 
 def verify_otp(db: Session, user:OTPVerification):
     # Find user by email
-    db_user = by_email(db,user.email)
+    db_user = fetch_user_by_email(db,user.email)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
 
@@ -146,8 +145,8 @@ def verify_otp(db: Session, user:OTPVerification):
     
 
 #Forget password and generate OTP to make new password
-def forget_pass(db:Session, user:UserEmailSchema):
-    db_user = by_email(db,user.email)
+def reset_password(db:Session, user:UserEmailSchema):
+    db_user = fetch_user_by_email(db,user.email)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
     otp=generate_otp()
@@ -165,8 +164,8 @@ def forget_pass(db:Session, user:UserEmailSchema):
     return Response[Data](data=data,message="OTP has been send to your email.")
 
 #Make a new password after otp verification
-def new_pass(db:Session, user=UserLogin):
-    db_user = by_email(db,user.email)
+def update_password(db:Session, user=UserLogin):
+    db_user = fetch_user_by_email(db,user.email)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found.")
     old_otp=db_user.otp
@@ -185,15 +184,15 @@ def new_pass(db:Session, user=UserLogin):
             )
     return Response[Data](data=data,message="Password reset successfully.")
 
-# Get a user by ID
-def get_user(db: Session, user_id: uuid.UUID):
+# fetch a user in a databse by id 
+def fetch_user_by_id(db: Session, user_id: uuid.UUID):
     stmt = select(User).where(User.id == user_id)
     result = db.exec(stmt).one_or_none()
     return result
 
 #Get user by ID
-def get_user_id(db:Session,user_id:uuid.UUID):
-    db_user=get_user(db,user_id)
+def get_user_details(db:Session,user_id:uuid.UUID):
+    db_user=fetch_user_by_id(db,user_id)
     if db_user is None:
         raise HTTPException(status_code=401, detail="User not found")
     data=Data(
@@ -202,18 +201,10 @@ def get_user_id(db:Session,user_id:uuid.UUID):
             )
     return Response[Data](data=data,message="User found successfully")
 
-#Delete user by Email
-def delete_user_by_email(db:Session, user:UserEmailSchema):
-    db_user=by_email(db, user.email)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found") 
-    db.delete(db_user)
-    db.commit()
-    return {"message":"User deleted successfully."}
 
 #delete user by ID
-def delete_user_id(db:Session,user_id:uuid.uuid1):
-    db_user=get_user(db,user_id)
+def delete_user_by_id(db:Session,user_id:uuid.uuid1):
+    db_user=fetch_user_by_id(db,user_id)
     if db_user is None:
         raise HTTPException(status_code=401, detail="User not found")
     db.delete(db_user)
