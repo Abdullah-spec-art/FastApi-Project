@@ -90,7 +90,7 @@ def login_user(db: Session, user_login: UserLogin):
 
 def send_otp_to_email(email:str, otp: str):
     mail_username = "hashbot0@gmail.com"  # Replace with your email (sender's email)
-    mail_password = "hplvsvyulxhzzzqt"  # Replace with your app-specific password
+    mail_password = ""  # Replace with your app-specific password
     mail_from = "hashbot0@gmail.com"
     mail_from_name = "FastApi Email"
     mail_server = "smtp.gmail.com"
